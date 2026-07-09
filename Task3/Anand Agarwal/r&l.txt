@@ -1,0 +1,87 @@
+import pandas as pd
+import numpy as np
+df = pd.read_csv("Boston.csv")
+
+print(df.head())
+
+X = df.drop(["medv","Unnamed: 0"], axis = 1).values
+y = df["medv"].values
+
+print(X)
+print(y)
+
+X_max = X.max(axis=0)
+X_min = X.min(axis=0)
+y_max = y.max()
+y_min = y.min()
+
+def normalise(data):
+    data_norm = (data - data.min(axis=0))/(data.max(axis=0)-data.min(axis=0))
+    return data_norm
+X_norm = normalise(X)
+print(X_norm)
+m,n = X_norm.shape
+a = 0.01
+itr = 1000
+lambda_reg = 100
+
+
+w_ridge = np.zeros(n)
+b_ridge = 0
+
+for i in range(itr):
+    y_pred = np.dot(X_norm , w_ridge) + b_ridge
+    dj_dw = np.zeros(n)
+    dj_db = 0
+
+    for j in range(m):
+        error = y_pred[j] - y[j]
+        dj_db +=error
+
+        for k in range(n):
+            dj_dw[k] +=error * X_norm[j][k]
+
+    dj_dw = (dj_dw/m) + (lambda_reg * w_ridge)/m
+    dj_db = dj_db/m
+
+    w_ridge -= a*dj_dw
+    b_ridge -= a*dj_db
+
+
+print("ridge w: ", w_ridge)
+print("ridge b: ",b_ridge)
+
+
+
+w_lasso = np.zeros(n)
+b_lasso = 0
+
+for i in range(itr):
+    y_pred = np.dot(X_norm, w_lasso) + b_lasso
+
+    dj_dw = np.zeros(n)
+    dj_db = 0
+
+    for j in range(m):
+        error = y_pred[j] - y[j]
+        dj_db +=error 
+        for k in range(n):
+            dj_dw[k] += error*X_norm[j][k]
+
+    dj_dw = (dj_dw/m) + (lambda_reg * np.sign(w_lasso))/m
+    dj_db = dj_db/m
+
+    w_lasso -= a*dj_dw
+    b_lasso -= a*dj_db
+
+print("lasso w: ", w_lasso)
+print("lasso b: ", b_lasso )   
+
+
+
+ridge_mse = np.mean((np.dot(X_norm , w_ridge)+ b_ridge - y)**2)
+lasso_mse = np.mean((np.dot(X_norm,w_lasso) +b_lasso - y)**2)
+
+
+print("ridge mse: ", ridge_mse)
+print("Lasso mse: ", lasso_mse)

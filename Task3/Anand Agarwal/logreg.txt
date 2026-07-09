@@ -1,0 +1,60 @@
+import pandas as pd
+import numpy as np
+df = pd.read_csv("heart.csv")
+print(df.head())
+X = df.drop("target",axis = 1).values
+y = df["target"].values
+
+df = df.values
+
+print(df)
+print(X)
+print(y)
+X_max = X.max(axis=0)
+X_min = X.min(axis=0)
+y_max = y.max()
+y_min = y.min()
+print(X_max)
+print(X_min)
+
+def normalise(data) :
+    data_norm = (data-data.min(axis=0))/(data.max(axis=0)-data.min(axis=0))
+    return data_norm
+X_norm = normalise(X)
+
+print(X_norm)
+y_norm = normalise(y)
+print(y_norm)
+m,n = X_norm.shape
+w = np.zeros(n)
+b= 0
+a = 0.01
+for i in range(1000):
+    z = np.dot(X_norm,w)+b
+    f_wb = 1/(1+np.exp(-z))
+    dj_dw = np.zeros(n)
+    dj_db = 0
+    for j in range(m):
+
+        error = f_wb[j] - y_norm[j]
+        dj_db += error
+       
+        for k in range(n):
+            dj_dw[k] += error*X_norm[j][k]
+
+
+    dj_dw = dj_dw/m
+    dj_db = dj_db/m
+
+    w-=a*dj_dw
+    b-=a*dj_db
+
+print("w: ", w)
+print("b", b)
+
+test_case = [57,0,0,120,354,0,1,163,1,0.6,2,0,2]
+test_case_norm = (test_case - X_min)/(X_max - X_min)
+z_test = np.dot(test_case_norm , w)+b
+probab = 1/(1+np.exp(-z_test))
+print("probability: ", probab)
+

@@ -1,0 +1,69 @@
+import pandas as pd
+import numpy as np
+df = pd.read_csv("insurance.csv")
+cols = ["sex","smoker","region"]
+
+for col in cols:
+    df[col] = df[col].replace({"male":0,"female":1,"yes":1,"no":0,"southwest":1,"southeast":2,"northwest":3,"northeast":4})
+
+print(df.head())
+X = df.drop("expenses", axis = 1)
+y = df["expenses"]
+
+df = df.values
+X = X.values
+y= y.values
+
+df
+X
+y
+X_max = X.max(axis = 0)
+X_min = X.min(axis = 0)
+
+X_norm = (X - X_min)/(X_max - X_min)
+
+print(X_norm)
+y_max = y.max()
+y_min = y.min()
+
+y_norm = (y - y_min)/(y_max - y_min)
+
+print(y_norm)
+m,n = X.shape
+print(n)
+
+w = np.zeros(n)
+b=0
+a=0.01
+itr = 1000
+for i in range(itr):
+    f_wb = np.dot(X_norm,w)+b
+
+   
+    dj_dw = np.zeros(n)
+    dj_db = 0
+
+    for j in range(m):
+        error = f_wb[j] - y_norm[j]
+        dj_db += error 
+
+        for k in range(n):
+            dj_dw[k] += error*X_norm[j][k]
+
+    dj_dw = dj_dw/m
+    dj_db = dj_db/m
+
+    w -= a*dj_dw
+    b -= a*dj_db
+
+print("Optimised w: ",w)
+print("Optimised b: ",b)
+test_case = [19,0,30.1,4,1,1]
+test_case_norm = (test_case - X_min)/ (X_max -X_min)
+
+prediction = np.dot(test_case_norm,w) +b
+
+
+final = prediction *(y_max - y_min) + y_min
+
+print("\nPredicted value: ", final)
